@@ -1,0 +1,1372 @@
+================================================================================
+【Project Tree Structure】
+================================================================================
+📁 Tset
+├── 📁 .androidide
+│   └── 📁 editor
+│       └── 📄 openedFiles.json.bak
+├── 📄 .gitignore
+├── 📁 app
+│   ├── 📄 .gitignore
+│   ├── 📄 build.gradle.kts
+│   ├── 📄 proguard-rules.pro
+│   └── 📁 src
+│       └── 📁 main
+│           ├── 📄 AndroidManifest.xml
+│           ├── 📁 java
+│           │   └── 📁 com
+│           │       └── 📁 example
+│           │           └── 📁 tset
+│           │               ├── 📄 BubbleBackgroundView.java
+│           │               ├── 📄 MainActivity.java
+│           │               └── 📄 MenuButtonView.java
+│           └── 📁 res
+│               ├── 📁 drawable
+│               │   ├── 📄 ic_launcher_background.xml
+│               │   └── 📄 paper_fold.png
+│               ├── 📁 drawable-v24
+│               │   └── 📄 ic_launcher_foreground.xml
+│               ├── 📁 layout
+│               │   └── 📄 activity_main.xml
+│               ├── 📁 mipmap-anydpi-v26
+│               │   ├── 📄 ic_launcher.xml
+│               │   └── 📄 ic_launcher_round.xml
+│               ├── 📁 mipmap-hdpi
+│               │   ├── 📄 ic_launcher.webp
+│               │   └── 📄 ic_launcher_round.webp
+│               ├── 📁 mipmap-mdpi
+│               │   ├── 📄 ic_launcher.webp
+│               │   └── 📄 ic_launcher_round.webp
+│               ├── 📁 mipmap-xhdpi
+│               │   ├── 📄 ic_launcher.webp
+│               │   └── 📄 ic_launcher_round.webp
+│               ├── 📁 mipmap-xxhdpi
+│               │   ├── 📄 ic_launcher.webp
+│               │   └── 📄 ic_launcher_round.webp
+│               ├── 📁 mipmap-xxxhdpi
+│               │   ├── 📄 ic_launcher.webp
+│               │   └── 📄 ic_launcher_round.webp
+│               ├── 📁 values
+│               │   ├── 📄 colors.xml
+│               │   ├── 📄 strings.xml
+│               │   └── 📄 themes.xml
+│               ├── 📁 values-night
+│               │   ├── 📄 colors.xml
+│               │   └── 📄 themes.xml
+│               └── 📁 xml
+│                   ├── 📄 backup_rules.xml
+│                   └── 📄 data_extraction_rules.xml
+├── 📄 build.gradle.kts
+├── 📁 gradle
+│   └── 📁 wrapper
+│       ├── 📄 gradle-wrapper.jar
+│       └── 📄 gradle-wrapper.properties
+├── 📄 gradle.properties
+├── 📄 gradlew
+├── 📄 gradlew.bat
+└── 📄 settings.gradle.kts
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/app/src/main/java/com/example/tset/MainActivity.java
+Project Path: app/src/main/java/com/example/tset/MainActivity.java
+File Name: MainActivity.java
+File Size: 7093 bytes
+================================================================================
+File Content:
+package com.example.tset;
+
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.view.Gravity;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.tset.databinding.ActivityMainBinding;
+
+public class MainActivity extends AppCompatActivity {
+
+    private static final float PANEL_WIDTH_DP = 128f;
+    private static final float SWIPE_THRESHOLD_DP = 60f;
+
+    private ActivityMainBinding binding;
+
+    private boolean menuOpen = false;
+    private int panelWidthPx;
+    private float swipeThresholdPx;
+    private float downX;
+    private float downY;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        final float density = getResources().getDisplayMetrics().density;
+        panelWidthPx = Math.round(PANEL_WIDTH_DP * density);
+        swipeThresholdPx = SWIPE_THRESHOLD_DP * density;
+
+        ViewGroup.LayoutParams lp = binding.sideMenu.getLayoutParams();
+        lp.width = panelWidthPx;
+        binding.sideMenu.setLayoutParams(lp);
+        binding.sideMenu.setTranslationX(-panelWidthPx);
+
+        setupEmptyHint();
+
+        binding.menuButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openMenu();
+            }
+        });
+
+        binding.menuScrim.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                closeMenu();
+            }
+        });
+
+        binding.menuItemSettings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                closeMenu();
+                showSettingsContent();
+            }
+        });
+    }
+
+    // ----------------------------------------------------------------
+    // 初始彩色提示文字
+    // ----------------------------------------------------------------
+    private void setupEmptyHint() {
+        String text = "这个作者很懒，什么都没留下";
+        int[] palette = new int[]{
+                Color.parseColor("#E53935"),
+                Color.parseColor("#FB8C00"),
+                Color.parseColor("#FDD835"),
+                Color.parseColor("#43A047"),
+                Color.parseColor("#00ACC1"),
+                Color.parseColor("#3949AB"),
+                Color.parseColor("#8E24AA")
+        };
+        SpannableString ss = new SpannableString(text);
+        for (int i = 0; i < text.length(); i++) {
+            ss.setSpan(new ForegroundColorSpan(palette[i % palette.length]),
+                    i, i + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        binding.emptyHint.setText(ss);
+    }
+
+    // ----------------------------------------------------------------
+    // 设置内容
+    // ----------------------------------------------------------------
+    private void showSettingsContent() {
+        final String[] items = {"颜色", "分辨率", "主题", "字体", "声音", "触觉", "多功能"};
+        binding.functionList.removeAllViews();
+        for (String item : items) {
+            binding.functionList.addView(createFunctionRow(item));
+        }
+        binding.emptyHint.setVisibility(View.GONE);
+        binding.functionContent.setVisibility(View.VISIBLE);
+    }
+
+private View createFunctionRow(String text) {
+    float density = getResources().getDisplayMetrics().density;
+
+    LinearLayout row = new LinearLayout(this);
+    row.setOrientation(LinearLayout.HORIZONTAL);
+    row.setGravity(Gravity.CENTER_VERTICAL);
+
+    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT);
+    int hMargin = (int) (14 * density);
+    int vMargin = (int) (7 * density);
+    lp.setMargins(hMargin, vMargin, hMargin, vMargin);
+    row.setLayoutParams(lp);
+
+    // ★ 换成白色圆角卡片
+    GradientDrawable bg = new GradientDrawable();
+    bg.setColor(Color.WHITE);
+    bg.setCornerRadius(10 * density);
+    row.setBackground(bg);
+    row.setElevation(6 * density);
+
+    // padding 正常值，不再为折角留多余空间
+    int padH = (int) (20 * density);
+    int padV = (int) (18 * density);
+    row.setPadding(padH, padV, padH, padV);
+
+    TextView tv = new TextView(this);
+    tv.setText(text);
+    tv.setTextSize(16f);
+    tv.setTextColor(Color.parseColor("#FF1A1A1A"));
+    tv.setIncludeFontPadding(false);
+    tv.setMaxLines(1);
+
+    row.addView(tv);
+    return row;
+}
+
+    // ----------------------------------------------------------------
+    // 侧栏开关
+    // ----------------------------------------------------------------
+    private void openMenu() {
+        if (menuOpen) return;
+        menuOpen = true;
+        binding.menuScrim.setVisibility(View.VISIBLE);
+        binding.sideMenu.setTranslationX(-panelWidthPx);
+        binding.sideMenu.animate()
+                .translationX(0f)
+                .setDuration(260L)
+                .setInterpolator(new DecelerateInterpolator())
+                .start();
+    }
+
+    private void closeMenu() {
+        if (!menuOpen) return;
+        menuOpen = false;
+        binding.sideMenu.animate()
+                .translationX(-panelWidthPx)
+                .setDuration(220L)
+                .setInterpolator(new DecelerateInterpolator())
+                .withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        binding.menuScrim.setVisibility(View.GONE);
+                    }
+                })
+                .start();
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (!menuOpen) {
+            switch (ev.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    downX = ev.getX();
+                    downY = ev.getY();
+                    break;
+                case MotionEvent.ACTION_UP:
+                    float dx = ev.getX() - downX;
+                    float dy = Math.abs(ev.getY() - downY);
+                    if (dx > swipeThresholdPx && dx > dy * 1.5f) {
+                        openMenu();
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (menuOpen) {
+            closeMenu();
+            return;
+        }
+        super.onBackPressed();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        this.binding = null;
+    }
+}
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/app/src/main/res/drawable/ic_launcher_background.xml
+Project Path: app/src/main/res/drawable/ic_launcher_background.xml
+File Name: ic_launcher_background.xml
+File Size: 5606 bytes
+================================================================================
+File Content:
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#3DDC84"
+        android:pathData="M0,0h108v108h-108z" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M9,0L9,108"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M19,0L19,108"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M29,0L29,108"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M39,0L39,108"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M49,0L49,108"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M59,0L59,108"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M69,0L69,108"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M79,0L79,108"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M89,0L89,108"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M99,0L99,108"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M0,9L108,9"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M0,19L108,19"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M0,29L108,29"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M0,39L108,39"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M0,49L108,49"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M0,59L108,59"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M0,69L108,69"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M0,79L108,79"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M0,89L108,89"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M0,99L108,99"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M19,29L89,29"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M19,39L89,39"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M19,49L89,49"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M19,59L89,59"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M19,69L89,69"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M19,79L89,79"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M29,19L29,89"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M39,19L39,89"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M49,19L49,89"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M59,19L59,89"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M69,19L69,89"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M79,19L79,89"
+        android:strokeWidth="0.8"
+        android:strokeColor="#33FFFFFF" />
+</vector>
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/app/src/main/java/com/example/tset/BubbleBackgroundView.java
+Project Path: app/src/main/java/com/example/tset/BubbleBackgroundView.java
+File Name: BubbleBackgroundView.java
+File Size: 5161 bytes
+================================================================================
+File Content:
+package com.example.tset;
+
+import android.content.Context;
+import android.graphics.BlurMaskFilter;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RadialGradient;
+import android.graphics.Shader;
+import android.util.AttributeSet;
+import android.view.View;
+
+import androidx.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+
+public class BubbleBackgroundView extends View {
+
+    /** ★ 所有圆半径统一 8mm ≈ 30.24dp */
+    private static final float RADIUS_DP = 30.24f;
+
+    /**
+     * ★ 蜂窝格距 = 直径 × 0.70 → 相邻圆心基准距离 0.70d
+     *   抖动后最大距离 ≈ 0.70d × 1.35 = 0.945d < d → 数学上保证 0 空隙
+     */
+    private static final float CELL_FACTOR = 0.70f;
+
+    /** 位置随机抖动幅度（±15% 格距），再大就会破坏"零空隙"保证 */
+    private static final float JITTER = 0.30f;
+
+    /** 模糊半径（dp） */
+    private static final float BLUR_RADIUS_DP = 6.0f;
+
+    private final Paint basePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint bubblePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final List<Bubble> bubbles = new ArrayList<>();
+    private final Random random = new Random();
+
+    public BubbleBackgroundView(Context context) {
+        this(context, null);
+    }
+
+    public BubbleBackgroundView(Context context, @Nullable AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
+
+    public BubbleBackgroundView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+
+        // BlurMaskFilter 必须走软件渲染
+        setLayerType(LAYER_TYPE_SOFTWARE, null);
+
+        basePaint.setColor(Color.parseColor("#F4F7FA"));
+        basePaint.setStyle(Paint.Style.FILL);
+
+        shadowPaint.setColor(Color.parseColor("#262D4A66"));
+        shadowPaint.setStyle(Paint.Style.FILL);
+
+        bubblePaint.setStyle(Paint.Style.FILL);
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        buildBubbles(w, h);
+    }
+
+    private void buildBubbles(int w, int h) {
+        bubbles.clear();
+        if (w <= 0 || h <= 0) return;
+
+        float density = getResources().getDisplayMetrics().density;
+        float r = RADIUS_DP * density;                  // 统一半径
+        float d = r * 2f;
+        float cell = d * CELL_FACTOR;                   // 蜂窝格距
+        float rowStep = cell * 0.8660254f;              // 行距 = cell × √3/2
+
+        float blurPx = BLUR_RADIUS_DP * density;
+        BlurMaskFilter blur = new BlurMaskFilter(blurPx, BlurMaskFilter.Blur.NORMAL);
+        shadowPaint.setMaskFilter(blur);
+        bubblePaint.setMaskFilter(blur);
+
+        // 向外多铺 4 圈，保证屏幕边缘也铺满
+        int cols = (int) Math.ceil((double) w / cell) + 4;
+        int rows = (int) Math.ceil((double) h / rowStep) + 4;
+
+        for (int row = -2; row < rows; row++) {
+            float baseY = row * rowStep;
+            // ★ 奇数行整体右移半格 → 六边形（蜂窝）排列
+            float xOffset = (row % 2 == 0) ? 0f : cell / 2f;
+
+            for (int col = -2; col < cols; col++) {
+                // 位置抖动幅度 ±15% 格距
+                float cx = col * cell + xOffset
+                         + (random.nextFloat() - 0.5f) * cell * JITTER;
+                float cy = baseY
+                         + (random.nextFloat() - 0.5f) * cell * JITTER;
+                bubbles.add(new Bubble(cx, cy, r));
+            }
+        }
+
+        // 打乱绘制顺序 → 谁压谁完全随机，视觉上不显网格
+        Collections.shuffle(bubbles, random);
+        invalidate();
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        canvas.drawRect(0f, 0f, getWidth(), getHeight(), basePaint);
+
+        for (Bubble b : bubbles) {
+            // 1) 阴影：偏右下 + 模糊 → 圆片浮起的层次感
+            canvas.drawCircle(b.cx + b.r * 0.06f,
+                              b.cy + b.r * 0.10f,
+                              b.r, shadowPaint);
+
+            // 2) 圆主体：中心纯白 → 55% 后淡出 → 边缘柔化
+            int solid = Color.WHITE;
+            int transparent = Color.argb(0, 255, 255, 255);
+            RadialGradient gradient = new RadialGradient(
+                    b.cx, b.cy, b.r,
+                    new int[]{solid, solid, transparent},
+                    new float[]{0f, 0.55f, 1f},
+                    Shader.TileMode.CLAMP);
+            bubblePaint.setShader(gradient);
+            canvas.drawCircle(b.cx, b.cy, b.r, bubblePaint);
+        }
+        bubblePaint.setShader(null);
+    }
+
+    private static class Bubble {
+        final float cx;
+        final float cy;
+        final float r;
+
+        Bubble(float cx, float cy, float r) {
+            this.cx = cx;
+            this.cy = cy;
+            this.r = r;
+        }
+    }
+}
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/app/src/main/res/layout/activity_main.xml
+Project Path: app/src/main/res/layout/activity_main.xml
+File Name: activity_main.xml
+File Size: 3547 bytes
+================================================================================
+File Content:
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFF4F7FA">
+
+    <!-- ① 背景 -->
+    <com.example.tset.BubbleBackgroundView
+        android:id="@+id/bubbleBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- ② 功能内容区（点击"设置"后显示，位于绿区下方） -->
+    <ScrollView
+        android:id="@+id/functionContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="58dp"
+        android:fillViewport="true"
+        android:scrollbars="none"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/functionList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="10dp"
+            android:paddingBottom="28dp" />
+    </ScrollView>
+
+    <!-- ③ 初始彩色提示，居中于整个屏幕 -->
+    <TextView
+        android:id="@+id/emptyHint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textSize="19sp"
+        android:textStyle="bold" />
+
+    <!-- ④ 顶部绿区 -->
+    <View
+        android:id="@+id/greenHeader"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="#FF2D6A4F" />
+
+    <!-- ⑤ 隔断线 -->
+    <View
+        android:id="@+id/greenDivider"
+        android:layout_width="match_parent"
+        android:layout_height="1.5dp"
+        android:layout_marginTop="56dp"
+        android:background="#FF1B4D3E" />
+
+    <!-- ⑥ 三条杠功能键 -->
+    <com.example.tset.MenuButtonView
+        android:id="@+id/menuButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp" />
+
+    <!-- ⑦ 侧栏 -->
+    <FrameLayout
+        android:id="@+id/menuScrim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/sideMenu"
+            android:layout_width="128dp"
+            android:layout_height="match_parent"
+            android:background="#FFD6ECFF"
+            android:clickable="true"
+            android:elevation="16dp"
+            android:focusable="true"
+            android:orientation="vertical"
+            android:paddingTop="60dp">
+
+            <!-- ★ 设置项：齿轮 + 3 个空格 + "设置"，上下窄，左右不碰壁 -->
+            <TextView
+                android:id="@+id/menuItemSettings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingStart="14dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="14dp"
+                android:paddingBottom="8dp"
+                android:text="⚙   设置"
+                android:textColor="#FF1A1A1A"
+                android:textSize="15sp" />
+        </LinearLayout>
+    </FrameLayout>
+
+</FrameLayout>
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/app/src/main/java/com/example/tset/MenuButtonView.java
+Project Path: app/src/main/java/com/example/tset/MenuButtonView.java
+File Name: MenuButtonView.java
+File Size: 3086 bytes
+================================================================================
+File Content:
+package com.example.tset;
+
+import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.util.AttributeSet;
+import android.view.View;
+
+import androidx.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+public class MenuButtonView extends View {
+
+    private final Paint barPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final List<RectF> bars = new ArrayList<>();
+    private final Random random = new Random();
+
+    public MenuButtonView(Context context) {
+        this(context, null);
+    }
+
+    public MenuButtonView(Context context, @Nullable AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
+
+    public MenuButtonView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        barPaint.setColor(Color.WHITE);
+        barPaint.setStyle(Paint.Style.FILL);
+        setClickable(true);
+        setFocusable(true);
+        setBackgroundColor(Color.TRANSPARENT);
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        buildBars(w, h);
+    }
+
+    private void buildBars(int w, int h) {
+        bars.clear();
+        if (w <= 0 || h <= 0) return;
+
+        // ★ 左对齐：三条杠从同一个 left 出发，右端依次内缩
+        float left = w * 0.22f;
+        float maxRight = w * 0.86f;
+        float maxWidth = maxRight - left;
+
+        float len1 = maxWidth;                                        // 最长
+        float len2 = maxWidth * (0.58f + random.nextFloat() * 0.12f); // 中等
+        float len3 = maxWidth * (0.30f + random.nextFloat() * 0.12f); // 最短
+        float[] lengths = new float[]{len1, len2, len3};
+
+        // 极细：基准 3%
+        float baseThickness = h * 0.030f;
+        float[] thickness = new float[3];
+        float sum = 0f;
+        for (int i = 0; i < 3; i++) {
+            thickness[i] = baseThickness * (0.70f + random.nextFloat() * 0.45f);
+            sum += thickness[i];
+        }
+
+        float gap = h * 0.10f;
+        float blockHeight = sum + gap * 2f;
+        float maxBlock = h * 0.55f;
+        if (blockHeight > maxBlock) {
+            float scale = maxBlock / blockHeight;
+            for (int i = 0; i < 3; i++) thickness[i] *= scale;
+            gap *= scale;
+            blockHeight = maxBlock;
+        }
+
+        // 垂直居中
+        float top = (h - blockHeight) / 2f;
+        for (int i = 0; i < 3; i++) {
+            // ★ left 固定，右侧 = left + length → 左对齐
+            bars.add(new RectF(left, top, left + lengths[i], top + thickness[i]));
+            top += thickness[i] + gap;
+        }
+
+        invalidate();
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        for (RectF bar : bars) {
+            float radius = bar.height() / 2f;
+            canvas.drawRoundRect(bar, radius, radius, barPaint);
+        }
+    }
+}
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/gradlew.bat
+Project Path: gradlew.bat
+File Name: gradlew.bat
+File Size: 2918 bytes
+================================================================================
+File Content:
+@rem
+@rem Copyright 2015 the original author or authors.
+@rem
+@rem Licensed under the Apache License, Version 2.0 (the "License");
+@rem you may not use this file except in compliance with the License.
+@rem You may obtain a copy of the License at
+@rem
+@rem      https://www.apache.org/licenses/LICENSE-2.0
+@rem
+@rem Unless required by applicable law or agreed to in writing, software
+@rem distributed under the License is distributed on an "AS IS" BASIS,
+@rem WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+@rem See the License for the specific language governing permissions and
+@rem limitations under the License.
+@rem
+
+@if "%DEBUG%"=="" @echo off
+@rem ##########################################################################
+@rem
+@rem  Gradle startup script for Windows
+@rem
+@rem ##########################################################################
+
+@rem Set local scope for the variables with windows NT shell
+if "%OS%"=="Windows_NT" setlocal
+
+set DIRNAME=%~dp0
+if "%DIRNAME%"=="" set DIRNAME=.
+@rem This is normally unused
+set APP_BASE_NAME=%~n0
+set APP_HOME=%DIRNAME%
+
+@rem Resolve any "." and ".." in APP_HOME to make it shorter.
+for %%i in ("%APP_HOME%") do set APP_HOME=%%~fi
+
+@rem Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
+set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m"
+
+@rem Find java.exe
+if defined JAVA_HOME goto findJavaFromJavaHome
+
+set JAVA_EXE=java.exe
+%JAVA_EXE% -version >NUL 2>&1
+if %ERRORLEVEL% equ 0 goto execute
+
+echo. 1>&2
+echo ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH. 1>&2
+echo. 1>&2
+echo Please set the JAVA_HOME variable in your environment to match the 1>&2
+echo location of your Java installation. 1>&2
+
+goto fail
+
+:findJavaFromJavaHome
+set JAVA_HOME=%JAVA_HOME:"=%
+set JAVA_EXE=%JAVA_HOME%/bin/java.exe
+
+if exist "%JAVA_EXE%" goto execute
+
+echo. 1>&2
+echo ERROR: JAVA_HOME is set to an invalid directory: %JAVA_HOME% 1>&2
+echo. 1>&2
+echo Please set the JAVA_HOME variable in your environment to match the 1>&2
+echo location of your Java installation. 1>&2
+
+goto fail
+
+:execute
+@rem Setup the command line
+
+set CLASSPATH=%APP_HOME%\gradle\wrapper\gradle-wrapper.jar
+
+
+@rem Execute Gradle
+"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %GRADLE_OPTS% "-Dorg.gradle.appname=%APP_BASE_NAME%" -classpath "%CLASSPATH%" org.gradle.wrapper.GradleWrapperMain %*
+
+:end
+@rem End local scope for the variables with windows NT shell
+if %ERRORLEVEL% equ 0 goto mainEnd
+
+:fail
+rem Set variable GRADLE_EXIT_CONSOLE if you need the _script_ return code instead of
+rem the _cmd.exe /c_ return code!
+set EXIT_CODE=%ERRORLEVEL%
+if %EXIT_CODE% equ 0 set EXIT_CODE=1
+if not ""=="%GRADLE_EXIT_CONSOLE%" exit %EXIT_CODE%
+exit /b %EXIT_CODE%
+
+:mainEnd
+if "%OS%"=="Windows_NT" endlocal
+
+:omega
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/app/src/main/res/drawable-v24/ic_launcher_foreground.xml
+Project Path: app/src/main/res/drawable-v24/ic_launcher_foreground.xml
+File Name: ic_launcher_foreground.xml
+File Size: 1702 bytes
+================================================================================
+File Content:
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:pathData="M31,63.928c0,0 6.4,-11 12.1,-13.1c7.2,-2.6 26,-1.4 26,-1.4l38.1,38.1L107,108.928l-32,-1L31,63.928z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endX="85.84757"
+                android:endY="92.4963"
+                android:startX="42.9492"
+                android:startY="49.59793"
+                android:type="linear">
+                <item
+                    android:color="#44000000"
+                    android:offset="0.0" />
+                <item
+                    android:color="#00000000"
+                    android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillType="nonZero"
+        android:pathData="M65.3,45.828l3.8,-6.6c0.2,-0.4 0.1,-0.9 -0.3,-1.1c-0.4,-0.2 -0.9,-0.1 -1.1,0.3l-3.9,6.7c-6.3,-2.8 -13.4,-2.8 -19.7,0l-3.9,-6.7c-0.2,-0.4 -0.7,-0.5 -1.1,-0.3C38.8,38.328 38.7,38.828 38.9,39.228l3.8,6.6C36.2,49.428 31.7,56.028 31,63.928h46C76.3,56.028 71.8,49.428 65.3,45.828zM43.4,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2c-0.3,-0.7 -0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C45.3,56.528 44.5,57.328 43.4,57.328L43.4,57.328zM64.6,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2s-0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C66.5,56.528 65.6,57.328 64.6,57.328L64.6,57.328z"
+        android:strokeWidth="1"
+        android:strokeColor="#00000000" />
+</vector>
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/gradle.properties
+Project Path: gradle.properties
+File Name: gradle.properties
+File Size: 1357 bytes
+================================================================================
+File Content:
+# Project-wide Gradle settings.
+# IDE (e.g. Android Studio) users:
+# Gradle settings configured through the IDE *will override*
+# any settings specified in this file.
+# For more details on how to configure your build environment visit
+# http://www.gradle.org/docs/current/userguide/build_environment.html
+# Specifies the JVM arguments used for the daemon process.
+# The setting is particularly useful for tweaking memory settings.
+org.gradle.jvmargs=-Xmx512m -Dfile.encoding=UTF-8
+# When configured, Gradle will run in incubating parallel mode.
+# This option should only be used with decoupled projects. More details, visit
+# http://www.gradle.org/docs/current/userguide/multi_project_builds.html#sec:decoupled_projects
+# org.gradle.parallel=true
+# AndroidX package structure to make it clearer which packages are bundled with the
+# Android operating system, and which are packaged with your app"s APK
+# https://developer.android.com/topic/libraries/support-library/androidx-rn
+android.useAndroidX=true
+# Kotlin code style for this project: "official" or "obsolete":
+kotlin.code.style=official
+# Enables namespacing of each library's R class so that its R class includes only the
+# resources declared in the library itself and none from the library's dependencies,
+# thereby reducing the size of the R class for that library
+android.nonTransitiveRClass=true
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/app/build.gradle.kts
+Project Path: app/build.gradle.kts
+File Name: build.gradle.kts
+File Size: 983 bytes
+================================================================================
+File Content:
+
+plugins {
+    id("com.android.application")
+    
+}
+
+android {
+    namespace = "com.example.tset"
+    compileSdk = 33
+    
+    defaultConfig {
+        applicationId = "com.example.tset"
+        minSdk = 21
+        targetSdk = 33
+        versionCode = 1
+        versionName = "1.0"
+        
+        vectorDrawables { 
+            useSupportLibrary = true
+        }
+    }
+    
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+
+    buildFeatures {
+        viewBinding = true
+        
+    }
+    
+}
+
+dependencies {
+
+
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.9.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+}
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/app/src/main/AndroidManifest.xml
+Project Path: app/src/main/AndroidManifest.xml
+File Name: AndroidManifest.xml
+File Size: 774 bytes
+================================================================================
+File Content:
+<?xml version="1.0" encoding="utf-8"?>
+
+<manifest 
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <application 
+        android:allowBackup="true" 
+        android:icon="@mipmap/ic_launcher" 
+        android:roundIcon="@mipmap/ic_launcher" 
+        android:label="@string/app_name" 
+        android:supportsRtl="true" 
+        android:theme="@style/AppTheme">
+        <activity 
+            android:name=".MainActivity" 
+            android:exported="true">
+            <intent-filter>
+                <action 
+                    android:name="android.intent.action.MAIN" />
+                <category 
+                    android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/app/proguard-rules.pro
+Project Path: app/proguard-rules.pro
+File Name: proguard-rules.pro
+File Size: 750 bytes
+================================================================================
+File Content:
+# Add project specific ProGuard rules here.
+# You can control the set of applied configuration files using the
+# proguardFiles setting in build.gradle.
+#
+# For more details, see
+#   http://developer.android.com/guide/developing/tools/proguard.html
+
+# If your project uses WebView with JS, uncomment the following
+# and specify the fully qualified class name to the JavaScript interface
+# class:
+#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
+#   public *;
+#}
+
+# Uncomment this to preserve the line number information for
+# debugging stack traces.
+#-keepattributes SourceFile,LineNumberTable
+
+# If you keep the line number information, uncomment this to
+# hide the original source file name.
+#-renamesourcefileattribute SourceFile
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/app/src/main/res/xml/data_extraction_rules.xml
+Project Path: app/src/main/res/xml/data_extraction_rules.xml
+File Name: data_extraction_rules.xml
+File Size: 541 bytes
+================================================================================
+File Content:
+<?xml version="1.0" encoding="utf-8"?><!--
+   Sample data extraction rules file; uncomment and customize as necessary.
+   See https://developer.android.com/about/versions/12/backup-restore#xml-changes
+   for details.
+-->
+<data-extraction-rules>
+  <cloud-backup>
+    <!-- TODO: Use <include> and <exclude> to control what is backed up.
+        <include .../>
+        <exclude .../>
+        -->
+  </cloud-backup>
+  <!--
+    <device-transfer>
+        <include .../>
+        <exclude .../>
+    </device-transfer>
+    -->
+</data-extraction-rules>
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/app/src/main/res/xml/backup_rules.xml
+Project Path: app/src/main/res/xml/backup_rules.xml
+File Name: backup_rules.xml
+File Size: 476 bytes
+================================================================================
+File Content:
+<?xml version="1.0" encoding="utf-8"?><!--
+   Sample backup rules file; uncomment and customize as necessary.
+   See https://developer.android.com/guide/topics/data/autobackup
+   for details.
+   Note: This file is ignored for devices older that API 31
+   See https://developer.android.com/about/versions/12/backup-restore
+-->
+<full-backup-content>
+  <!--
+   <include domain="sharedpref" path="."/>
+   <exclude domain="sharedpref" path="device.xml"/>
+-->
+</full-backup-content>
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/app/src/main/res/values/themes.xml
+Project Path: app/src/main/res/values/themes.xml
+File Name: themes.xml
+File Size: 356 bytes
+================================================================================
+File Content:
+<resources xmlns:tools="http://schemas.android.com/tools">
+  <!-- Base application theme. -->
+  <style name="Base.AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
+    <!-- Customize your theme here. -->
+    <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+  </style>
+
+  <style name="AppTheme" parent="Base.AppTheme" />
+</resources>
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/app/src/main/res/values-night/themes.xml
+Project Path: app/src/main/res/values-night/themes.xml
+File Name: themes.xml
+File Size: 356 bytes
+================================================================================
+File Content:
+<resources xmlns:tools="http://schemas.android.com/tools">
+  <!-- Base application theme. -->
+  <style name="Base.AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
+    <!-- Customize your theme here. -->
+    <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+  </style>
+
+  <style name="AppTheme" parent="Base.AppTheme" />
+</resources>
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/build.gradle.kts
+Project Path: build.gradle.kts
+File Name: build.gradle.kts
+File Size: 311 bytes
+================================================================================
+File Content:
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+plugins {
+    id("com.android.application") version "8.0.0" apply false
+    id("com.android.library") version "8.0.0" apply false
+         
+}
+
+tasks.register<Delete>("clean") {
+    delete(rootProject.buildDir)
+}
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/settings.gradle.kts
+Project Path: settings.gradle.kts
+File Name: settings.gradle.kts
+File Size: 294 bytes
+================================================================================
+File Content:
+pluginManagement {
+  repositories {
+    gradlePluginPortal()
+    google()
+    mavenCentral()
+  }
+}
+
+dependencyResolutionManagement {
+  repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+  repositories {
+    google()
+    mavenCentral()
+  }
+}
+
+rootProject.name = "Tset"
+
+include(":app")
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+Project Path: app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+File Name: ic_launcher.xml
+File Size: 272 bytes
+================================================================================
+File Content:
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background" />
+    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+</adaptive-icon>
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+Project Path: app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+File Name: ic_launcher_round.xml
+File Size: 272 bytes
+================================================================================
+File Content:
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background" />
+    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+</adaptive-icon>
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/gradle/wrapper/gradle-wrapper.properties
+Project Path: gradle/wrapper/gradle-wrapper.properties
+File Name: gradle-wrapper.properties
+File Size: 222 bytes
+================================================================================
+File Content:
+distributionBase=GRADLE_USER_HOME
+distributionPath=wrapper/dists
+distributionUrl=https\://services.gradle.org/distributions/gradle-8.1.1-bin.zip
+networkTimeout=10000
+zipStoreBase=GRADLE_USER_HOME
+zipStorePath=wrapper/dists
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/app/src/main/res/values/strings.xml
+Project Path: app/src/main/res/values/strings.xml
+File Name: strings.xml
+File Size: 106 bytes
+================================================================================
+File Content:
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tset</string>
+
+</resources>
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/app/src/main/res/values/colors.xml
+Project Path: app/src/main/res/values/colors.xml
+File Name: colors.xml
+File Size: 62 bytes
+================================================================================
+File Content:
+<?xml version="1.0" encoding="utf-8"?>
+<resources></resources>
+
+================================================================================
+【File Information】
+================================================================================
+Complete Path: /storage/emulated/0/AndroidIDEProjects/Tset/app/src/main/res/values-night/colors.xml
+Project Path: app/src/main/res/values-night/colors.xml
+File Name: colors.xml
+File Size: 62 bytes
+================================================================================
+File Content:
+<?xml version="1.0" encoding="utf-8"?>
+<resources></resources>
+
+================================================================================
+Integration Complete! Total 23 files processed.
+================================================================================
