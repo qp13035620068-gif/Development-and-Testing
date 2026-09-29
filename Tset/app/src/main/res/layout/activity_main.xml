@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFF4F7FA">
+
+    <!-- ① 背景 -->
+    <com.example.tset.BubbleBackgroundView
+        android:id="@+id/bubbleBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- ② 功能内容区（点击"设置"后显示，位于绿区下方） -->
+    <ScrollView
+        android:id="@+id/functionContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="58dp"
+        android:fillViewport="true"
+        android:scrollbars="none"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/functionList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="10dp"
+            android:paddingBottom="28dp" />
+    </ScrollView>
+
+    <!-- ③ 初始彩色提示，居中于整个屏幕 -->
+    <TextView
+        android:id="@+id/emptyHint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textSize="19sp"
+        android:textStyle="bold" />
+
+    <!-- ④ 顶部绿区 -->
+    <View
+        android:id="@+id/greenHeader"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="#FF2D6A4F" />
+
+    <!-- ⑤ 隔断线 -->
+    <View
+        android:id="@+id/greenDivider"
+        android:layout_width="match_parent"
+        android:layout_height="1.5dp"
+        android:layout_marginTop="56dp"
+        android:background="#FF1B4D3E" />
+
+    <!-- ⑥ 三条杠功能键 -->
+    <com.example.tset.MenuButtonView
+        android:id="@+id/menuButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp" />
+
+    <!-- ⑦ 侧栏 -->
+    <FrameLayout
+        android:id="@+id/menuScrim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/sideMenu"
+            android:layout_width="128dp"
+            android:layout_height="match_parent"
+            android:background="#FFD6ECFF"
+            android:clickable="true"
+            android:elevation="16dp"
+            android:focusable="true"
+            android:orientation="vertical"
+            android:paddingTop="60dp">
+
+            <!-- ★ 设置项：齿轮 + 3 个空格 + "设置"，上下窄，左右不碰壁 -->
+            <TextView
+                android:id="@+id/menuItemSettings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingStart="14dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="14dp"
+                android:paddingBottom="8dp"
+                android:text="⚙   设置"
+                android:textColor="#FF1A1A1A"
+                android:textSize="15sp" />
+        </LinearLayout>
+    </FrameLayout>
+
+</FrameLayout>
